@@ -34,6 +34,7 @@ function hangupManagedCall() {
     });
 }
 
+// act on Bookings events, mainly Start and End
 const bookingEventFeedback = xapi.Event.Bookings.on((booking) => {
   console.log('New booking event: ' + JSON.stringify(booking));
   if (booking.TimeRemaining) {
@@ -47,6 +48,7 @@ const bookingEventFeedback = xapi.Event.Bookings.on((booking) => {
         var uriValid = validateEmail(meetingUri);
         console.log("Booking URI: "+JSON.stringify(meetingUri)+", valid: "+uriValid);
         if (uriValid) {
+// dial the OBTP URI
           xapi.Command.Dial({Number: meetingUri, BookingId: booking.Start.Id})
             .then((dialing) => {
               console.log("Dialing...: "+JSON.stringify(dialing));
@@ -76,6 +78,7 @@ const anyEventFeedback = xapi.Event.on((event) => {
 });
 */
 
+// people presence detection
 const detectPeopleInCall = xapi.Status.RoomAnalytics.PeopleCount.Current.on((count) => {
   console.log("People count now: "+JSON.stringify(count));
   if (DETECT_PEOPLE && managedCallActive) {
@@ -88,6 +91,7 @@ const detectPeopleInCall = xapi.Status.RoomAnalytics.PeopleCount.Current.on((cou
   }
 });
 
+// cleanup if there was any kind of hangup (automated/manual)
 const hangupEventFeedback = xapi.Event.CallDisconnect.on((call) => {
   console.log("Call disconnect: "+JSON.stringify(call));
   if (managedCallActive && (call.CallId == managedCallId)) {
